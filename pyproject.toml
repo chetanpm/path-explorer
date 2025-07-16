@@ -1,0 +1,13 @@
+[project]
+name = "pathexplorer"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.3.1",
+    "pyqt6>=6.9.1",
+    "pyvista>=0.45.2",
+    "pyvistaqt>=0.11.2",
+    "vtk>=9.4.2",
+]

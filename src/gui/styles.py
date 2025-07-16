@@ -1,0 +1,121 @@
+# =====================
+# styles.py
+# =====================
+def get_dynamic_styles(dark_mode=True, element=None):
+    """Return stylesheet based on theme and element"""
+    base_styles = """
+        QWidget {{
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }}
+        QSlider::groove:horizontal {{
+            background: {slider_groove};
+            height: 8px;
+            border-radius: 4px;
+        }}
+        QSlider::handle:horizontal {{
+            background: {slider_handle};
+            width: 16px;
+            margin: -4px 0;
+            border-radius: 8px;
+            border: 1px solid {slider_handle_border};
+        }}
+        QLabel {{
+            color: {text_color};
+            font-size: 11pt;
+        }}
+        QCheckBox {{
+            color: {text_color};
+            font-size: 11pt;
+        }}
+        QCheckBox::indicator {{
+            width: 16px;
+            height: 16px;
+        }}
+        QPushButton {{
+            background-color: {button_bg};
+            color: {text_color};
+            border: 1px solid {button_border};
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 11pt;
+            min-height: 30px;
+        }}
+        QPushButton:hover {{
+            background-color: {button_hover};
+        }}
+        QPushButton:pressed {{
+            background-color: {button_pressed};
+        }}
+    """
+    
+    if dark_mode:
+        theme = {
+            "bg": "#2b2b2b",
+            "text": "#e0e0e0",
+            "slider_groove": "#3a3a3a",
+            "slider_handle": "#61afef",
+            "slider_handle_border": "#3a6a9e",
+            "button_bg": "#3a3a3a",
+            "button_hover": "#4a4a4a",
+            "button_pressed": "#2a2a2a",
+            "button_border": "#555555"
+        }
+    else:
+        theme = {
+            "bg": "#f0f0f0",
+            "text": "#000000",
+            "slider_groove": "#d0d0d0",
+            "slider_handle": "#0078d7",
+            "slider_handle_border": "#005a9e",
+            "button_bg": "#e0e0e0",
+            "button_hover": "#d0d0d0",
+            "button_pressed": "#c0c0c0",
+            "button_border": "#aaaaaa"
+        }
+    
+    # Return specific element style if requested
+    if element == "button":
+        return f"""
+            QPushButton {{
+                background-color: {theme['button_bg']};
+                color: {theme['text']};
+                border: 1px solid {theme['button_border']};
+                border-radius: 6px;
+                padding: 8px 12px;
+                font-size: 11pt;
+                min-height: 30px;
+            }}
+            QPushButton:hover {{
+                background-color: {theme['button_hover']};
+            }}
+            QPushButton:pressed {{
+                background-color: {theme['button_pressed']};
+            }}
+        """
+    elif element == "slider":
+        return f"""
+            QSlider::groove:horizontal {{
+                background: {theme['slider_groove']};
+                height: 8px;
+                border-radius: 4px;
+            }}
+            QSlider::handle:horizontal {{
+                background: {theme['slider_handle']};
+                border: 1px solid {theme['slider_handle_border']};
+                width: 16px;
+                margin: -4px 0;
+                border-radius: 8px;
+            }}
+        """
+    
+    # Return full stylesheet
+    return base_styles.format(
+        text_color=theme['text'],
+        slider_groove=theme['slider_groove'],
+        slider_handle=theme['slider_handle'],
+        slider_handle_border=theme['slider_handle_border'],
+        button_bg=theme['button_bg'],
+        button_hover=theme['button_hover'],
+        button_pressed=theme['button_pressed'],
+        button_border=theme['button_border']
+    )
