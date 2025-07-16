@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
     QPushButton, QFrame
 )
 from PyQt6.QtGui import QAction, QFont
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt, QSize, pyqtSignal
 from .visualization import VisualizationWidget
 from src.core.theme_manager import ThemeManager
 from .styles import get_dynamic_styles
@@ -27,18 +27,23 @@ def get_icon(name, dark_mode=True):
 
 
 class AMVisualizer(QMainWindow):
+    # Add signals for layer changes
+    change_layer_requested = pyqtSignal(int)
+    animation_finished = pyqtSignal()
     def __init__(self):
         super().__init__()
         self.dark_mode = True  # Default to dark mode
         self._setup_ui()
         self.cli_data = None
+        self.change_layer_requested.connect(self._on_change_layer_requested)
+        self.animation_finished.connect(self._on_animation_finished)
     
     def _setup_ui(self):
         # Window configuration
         self.setWindowTitle("Path Explorer")
         self.setGeometry(100, 100, 1400, 900)
         
-        # Central widget (no hardcoded stylesheet)
+        # Central widget
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
@@ -47,12 +52,11 @@ class AMVisualizer(QMainWindow):
         
         # Visualization widget
         self.viz_widget = VisualizationWidget()
-        self.viz_widget.set_theme("dark")  # Set initial theme
-        main_layout.addWidget(self.viz_widget, 1)  # Takes 90% of space
+        self.viz_widget.set_theme("dark")
+        main_layout.addWidget(self.viz_widget, 1)
         
-        # Control panel with modern styling
+        # Control panel
         control_frame = QFrame()
-        control_frame.setFrameShape(QFrame.Shape.StyledPanel)
         control_frame.setStyleSheet("""
             QFrame {
                 background-color: #333;
@@ -81,10 +85,10 @@ class AMVisualizer(QMainWindow):
         control_layout.addWidget(self.layer_slider, 4)
         
         # Heat map toggle
-        self.heat_toggle = QCheckBox("Show Heat Source")
-        self.heat_toggle.setFont(QFont("Segoe UI", 10))
-        self.heat_toggle.stateChanged.connect(self._toggle_heat)
-        control_layout.addWidget(self.heat_toggle)
+        #self.heat_toggle = QCheckBox("Show Heat Source")
+        #self.heat_toggle.setFont(QFont("Segoe UI", 10))
+        #self.heat_toggle.stateChanged.connect(self._toggle_heat)
+        #control_layout.addWidget(self.heat_toggle)
         
         # Fit to view button
         self.fit_button = QPushButton(get_icon("fit") + " Fit View")
@@ -106,89 +110,175 @@ class AMVisualizer(QMainWindow):
         toolbar = QToolBar("Main Toolbar")
         toolbar.setMovable(False)
         toolbar.setIconSize(QSize(24, 24))
-        toolbar.setStyleSheet("""
-            QToolBar {
-                background-color: #2b2b2b;
-                border-bottom: 1px solid #444;
-                spacing: 10px;
-                padding: 5px;
-            }
-            QToolButton {
-                padding: 5px;
-                border-radius: 4px;
-            }
-            QToolButton:hover {
-                background-color: #3a3a3a;
-            }
-        """ if self.dark_mode else """
-            QToolBar {
-                background-color: #f0f0f0;
-                border-bottom: 1px solid #ddd;
-                spacing: 10px;
-                padding: 5px;
-            }
-            QToolButton:hover {
-                background-color: #e0e0e0;
-            }
-        """)
+        if self.dark_mode:
+            toolbar.setStyleSheet("""
+                QToolBar {
+                    background-color: #2b2b2b;
+                    border-bottom: 1px solid #444;
+                    spacing: 10px;
+                    padding: 5px;
+                }
+                QToolButton {
+                    padding: 5px;
+                    border-radius: 4px;
+                }
+                QToolButton:hover {
+                    background-color: #3a3a3a;
+                }
+            """)
+        else:
+            toolbar.setStyleSheet("""
+                QToolBar {
+                    background-color: #f0f0f0;
+                    border-bottom: 1px solid #ddd;
+                    spacing: 10px;
+                    padding: 5px;
+                }
+                QToolButton:hover {
+                    background-color: #e0e0e0;
+                }
+            """)
         self.addToolBar(toolbar)
 
-        
-        # Open action with icon
+        # Add actions to toolbar
         open_action = QAction(get_icon("open") + " Open CLI", self)
         open_action.setShortcut("Ctrl+O")
         open_action.triggered.connect(self._open_file)
         open_action.setFont(QFont("Segoe UI", 10))
         toolbar.addAction(open_action)
         
-        # Reset view action
         reset_view_action = QAction(get_icon("reset") + " Reset View", self)
         reset_view_action.setShortcut("R")
         reset_view_action.triggered.connect(self._reset_view)
         reset_view_action.setFont(QFont("Segoe UI", 10))
         toolbar.addAction(reset_view_action)
         
-        # Theme toggle action
         self.theme_action = QAction(get_icon("theme", self.dark_mode) + " Light Mode", self)
         self.theme_action.triggered.connect(self._toggle_theme)
         self.theme_action.setFont(QFont("Segoe UI", 10))
         toolbar.addAction(self.theme_action)
         
-        # Add spacer
         toolbar.addSeparator()
         
-        # Status bar with modern styling
+        # Animation controls
+        self.play_action = QAction(get_icon("play") + " Play", self)
+        self.play_action.setObjectName("play")
+        self.play_action.triggered.connect(self._play_animation)
+        toolbar.addAction(self.play_action)
+        
+        self.pause_action = QAction(get_icon("pause") + " Pause", self)
+        self.pause_action.setObjectName("pause")
+        self.pause_action.triggered.connect(self._pause_animation)
+        toolbar.addAction(self.pause_action)
+        
+        self.stop_action = QAction(get_icon("stop") + " Stop", self)
+        self.stop_action.setObjectName("stop")
+        self.stop_action.triggered.connect(self._stop_animation)
+        toolbar.addAction(self.stop_action)
+        
+        #self.continuous_action = QAction(get_icon("play") + " Continuous Play", self)
+        #self.continuous_action.setObjectName("continuous")
+        #self.continuous_action.triggered.connect(self._play_continuous)
+        #toolbar.addAction(self.continuous_action)
+
+        # Animation speed control
+        speed_label = QLabel("Speed:")
+        control_layout.addWidget(speed_label)
+
+        self.speed_slider = QSlider(Qt.Orientation.Horizontal)
+        self.speed_slider.setRange(1, 500)  # 1ms to 500ms
+        self.speed_slider.setValue(1)
+        self.speed_slider.valueChanged.connect(self._change_speed)
+        control_layout.addWidget(self.speed_slider)
+
+        # Status bar
         self.status_bar = QStatusBar()
         self.status_bar.setFont(QFont("Segoe UI", 9))
-        self.status_bar.setStyleSheet("""
-            QStatusBar {
-                background-color: #2b2b2b;
-                color: #e0e0e0;
-                border-top: 1px solid #444;
-            }
-        """ if self.dark_mode else """
-            QStatusBar {
-                background-color: #f0f0f0;
-                color: #333;
-                border-top: 1px solid #ddd;
-            }
-        """)
+        if self.dark_mode:
+            self.status_bar.setStyleSheet("""
+                QStatusBar {
+                    background-color: #2b2b2b;
+                    color: #e0e0e0;
+                    border-top: 1px solid #444;
+                }
+            """)
+        else:
+            self.status_bar.setStyleSheet("""
+                QStatusBar {
+                    background-color: #f0f0f0;
+                    color: #333;
+                    border-top: 1px solid #ddd;
+                }
+            """)
         self.setStatusBar(self.status_bar)
         self.status_bar.showMessage("Ready")
         
         # Apply initial styles
         self.centralWidget().setStyleSheet(get_dynamic_styles(self.dark_mode))
+
+    def _on_change_layer_requested(self, layer_idx):
+        """Handle request to change layer from visualization"""
+        self.layer_slider.setValue(layer_idx)
+        self.layer_label.setText(f"Layer: {layer_idx}/{self.layer_slider.maximum()}")
     
+    def _on_animation_finished(self):
+        """Handle animation completion"""
+        self.status_bar.showMessage("Animation completed", 3000)
+    
+    def _play_continuous(self):
+        """Start continuous animation across layers"""
+        if self.viz_widget.cli_data:
+            self.viz_widget.start_animation(
+                self.layer_slider.value(),
+                continuous=True
+            )
+    
+    def _change_layer(self, layer_idx):
+        """Switch to different layer"""
+        # Stop animation if running
+        if self.viz_widget.is_animating:
+            self.viz_widget.stop_animation()
+            
+        self.layer_label.setText(f"Layer: {layer_idx}/{self.layer_slider.maximum()}")
+        self.viz_widget.plot_layer(layer_idx)
+
+    def _change_speed(self, value):
+        """Change animation speed"""
+        if hasattr(self.viz_widget, 'animation_timer'):
+            self.viz_widget.animation_speed = value
+            if self.viz_widget.is_animating:
+                self.viz_widget.animation_timer.setInterval(value)
+
+    def _play_animation(self):
+        """Start or resume animation"""
+        if self.viz_widget.cli_data:
+            if not self.viz_widget.is_animating:
+                self.viz_widget.start_animation(self.layer_slider.value())
+            else:
+                self.viz_widget.animation_timer.start(self.viz_widget.animation_speed)
+    
+    def _pause_animation(self):
+        """Pause animation"""
+        if self.viz_widget.is_animating:
+            self.viz_widget.animation_timer.stop()
+    
+    def _stop_animation(self):
+        """Stop animation"""
+        self.viz_widget.stop_animation()
+        # Redraw current layer
+        if self.viz_widget.cli_data:
+            self.viz_widget.plot_layer(self.layer_slider.value())
+
     def _set_view_mode(self, mode):
         """Switch between layer and 3D view"""
         self.viz_widget.set_view_mode(mode)
         if mode == "full":
             self.layer_slider.setEnabled(False)
-            self.heat_toggle.setEnabled(False)
+            #self.heat_toggle.setEnabled(False)
             self.status_bar.showMessage("3D full part view", 3000)
         else:
             self.layer_slider.setEnabled(True)
-            self.heat_toggle.setEnabled(True)
+            #self.heat_toggle.setEnabled(True)
             self.status_bar.showMessage("Layer view", 3000)
     
     def _open_file(self):

@@ -4,11 +4,13 @@
 import numpy as np
 import pyvista as pv
 from PyQt6.QtWidgets import QWidget, QVBoxLayout
+from PyQt6.QtCore import QTimer
 from pyvistaqt import BackgroundPlotter
 import time
 
 class VisualizationWidget(QWidget):
     def __init__(self, parent=None):
+        self.accumulated_heat = None
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
         self.setLayout(self.layout)
@@ -45,7 +47,159 @@ class VisualizationWidget(QWidget):
         self.user_camera_position = None
         
         print(f"VisualizationWidget initialized in {time.time() - start_time:.2f} seconds")
+
+        self.animation_timer = QTimer()
+        self.animation_timer.timeout.connect(self._animate_step)
+        self.animation_speed = 100  # ms between frames
+        self.animation_path = []
+        self.current_path_index = 0
+        self.is_animating = False
+        self.accumulated_heat = None  # For heat accumulation visualization
+
+        self.continuous_mode = False
+        self.layer_complete_timer = QTimer()
+        self.layer_complete_timer.setSingleShot(True)
+        self.layer_complete_timer.timeout.connect(self._start_next_layer)
+
+    def start_animation(self, layer_idx, continuous=False):
+        """Prepare and start animation for a layer"""
+        if not self.cli_data or layer_idx >= len(self.cli_data['layers']):
+            return
+            
+        self.stop_animation()
+        self.is_animating = True
+        self.current_layer = layer_idx
+        layer = self.cli_data['layers'][layer_idx]
+        
+        # Prepare animation path
+        self.animation_path = []
+        z = layer['z']
+        for hatch in layer['hatches']:
+            if len(hatch) < 2:
+                continue
+            for i in range(len(hatch) - 1):
+                start = hatch[i]
+                end = hatch[i+1]
+                distance = ((end[0]-start[0])**2 + (end[1]-start[1])**2)**0.5
+                num_segments = max(2, int(distance / 0.1))  # 0.1mm resolution
+                for t in np.linspace(0, 1, num_segments):
+                    x = start[0] + t * (end[0] - start[0])
+                    y = start[1] + t * (end[1] - start[1])
+                    self.animation_path.append((x, y, z))
+        
+        self.current_path_index = 0
+        self.plotter.clear()
+        self._setup_base_visualization(layer)
+        self.animation_timer.start(self.animation_speed)
     
+    def _animate_step(self):
+        """Update animation to next position"""
+        if self.current_path_index >= len(self.animation_path) or not self.is_animating:
+            if self.continuous_mode:
+                # Start transition to next layer
+                self.layer_complete_timer.start(1000)  # 1 second pause
+            else:
+                self.stop_animation()
+            return
+            
+        position = self.animation_path[self.current_path_index]
+        self.current_path_index += 1
+        
+        # Update moving heat spot
+        self.plotter.remove_actor("heat_spot")
+        spot = None
+        
+        if self.heat_model:
+            spot = self.heat_model.create_moving_spot((position[0], position[1]), position[2])
+            self.plotter.add_mesh(
+                spot,
+                cmap="coolwarm",
+                scalars="Temperature",
+                clim=[0, self.heat_model.max_temp],
+                name="heat_spot"
+            )
+        
+        # Update tool position marker
+        self.plotter.remove_actor("tool_position")
+        tool = pv.Sphere(radius=0.05, center=position)
+        self.plotter.add_mesh(tool, color="red", name="tool_position")
+        
+        # Accumulate heat only if spot was created
+        if spot:
+            if self.accumulated_heat is None:
+                self.accumulated_heat = spot
+            else:
+                try:
+                    self.accumulated_heat = self.accumulated_heat.merge(spot)
+                except Exception as e:
+                    print(f"Error merging heat spots: {e}")
+                    self.accumulated_heat = spot
+                
+            self.plotter.remove_actor("accumulated_heat")
+            self.plotter.add_mesh(
+                self.accumulated_heat,
+                cmap="coolwarm",
+                scalars="Temperature",
+                clim=[0, self.heat_model.max_temp],
+                opacity=0.5,
+                name="accumulated_heat"
+            )
+    
+    def _start_next_layer(self):
+        """Start animation for the next layer"""
+        next_layer = self.current_layer + 1
+        total_layers = len(self.cli_data['layers']) if self.cli_data else 0
+        
+        if next_layer < total_layers:
+            # Notify main window to update UI
+            if hasattr(self.parent(), 'change_layer_requested'):
+                self.parent().change_layer_requested.emit(next_layer)
+            
+            # Start animation for next layer
+            self.start_animation(next_layer, continuous=True)
+        else:
+            # Reached end of all layers
+            self.stop_animation()
+            if hasattr(self.parent(), 'animation_finished'):
+                self.parent().animation_finished.emit()
+
+    def stop_animation(self):
+        """Stop ongoing animation"""
+        self.is_animating = False
+        self.continuous_mode = False
+        self.animation_timer.stop()
+        self.layer_complete_timer.stop()
+        self.animation_path = []
+        self.current_path_index = 0
+        self.accumulated_heat = None
+    
+    def _setup_base_visualization(self, layer):
+        """Setup static visualization elements for animation"""
+        z = layer['z']
+        # Plot hatches as paths
+        for hatch in layer['hatches']:
+            if len(hatch) < 2:
+                continue
+            points = np.array([[p[0], p[1], z] for p in hatch])
+            poly = pv.lines_from_points(points)
+            tube = poly.tube(radius=0.01)
+            self.plotter.add_mesh(tube, color="white", name="hatches")
+        
+        # Add axes and bounds
+        if self.overall_bounds:
+            min_coords = self.overall_bounds['min']
+            max_coords = self.overall_bounds['max']
+            self.plotter.add_axes(color="white")
+            self.plotter.show_bounds(
+                bounds=[
+                    min_coords[0], max_coords[0],
+                    min_coords[1], max_coords[1],
+                    z - 0.01, z + 0.01
+                ],
+                grid='front',
+                location='outer',
+                color="white",
+            )
     def set_theme(self, theme):
         """Set current theme (dark/light) for visualization"""
         self.theme = theme

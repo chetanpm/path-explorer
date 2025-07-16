@@ -48,6 +48,7 @@ def get_dynamic_styles(dark_mode=True, element=None):
         }}
     """
     
+    # Define theme colors
     if dark_mode:
         theme = {
             "bg": "#2b2b2b",
@@ -58,7 +59,11 @@ def get_dynamic_styles(dark_mode=True, element=None):
             "button_bg": "#3a3a3a",
             "button_hover": "#4a4a4a",
             "button_pressed": "#2a2a2a",
-            "button_border": "#555555"
+            "button_border": "#555555",
+            "button_play": "#4CAF50",  # Green
+            "button_pause": "#FFC107",  # Amber
+            "button_stop": "#F44336",   # Red
+            "button_continuous": "#2196F3",  # Blue
         }
     else:
         theme = {
@@ -70,46 +75,31 @@ def get_dynamic_styles(dark_mode=True, element=None):
             "button_bg": "#e0e0e0",
             "button_hover": "#d0d0d0",
             "button_pressed": "#c0c0c0",
-            "button_border": "#aaaaaa"
+            "button_border": "#aaaaaa",
+            "button_play": "#388E3C",  # Dark Green
+            "button_pause": "#FFA000",  # Dark Amber
+            "button_stop": "#D32F2F",   # Dark Red
+            "button_continuous": "#1976D2",  # Dark Blue
         }
     
-    # Return specific element style if requested
-    if element == "button":
-        return f"""
-            QPushButton {{
-                background-color: {theme['button_bg']};
-                color: {theme['text']};
-                border: 1px solid {theme['button_border']};
-                border-radius: 6px;
-                padding: 8px 12px;
-                font-size: 11pt;
-                min-height: 30px;
-            }}
-            QPushButton:hover {{
-                background-color: {theme['button_hover']};
-            }}
-            QPushButton:pressed {{
-                background-color: {theme['button_pressed']};
-            }}
-        """
-    elif element == "slider":
-        return f"""
-            QSlider::groove:horizontal {{
-                background: {theme['slider_groove']};
-                height: 8px;
-                border-radius: 4px;
-            }}
-            QSlider::handle:horizontal {{
-                background: {theme['slider_handle']};
-                border: 1px solid {theme['slider_handle_border']};
-                width: 16px;
-                margin: -4px 0;
-                border-radius: 8px;
-            }}
-        """
+    # Animation button styles
+    animation_button_styles = f"""
+        QPushButton#play {{
+            background-color: {theme['button_play']};
+        }}
+        QPushButton#pause {{
+            background-color: {theme['button_pause']};
+        }}
+        QPushButton#stop {{
+            background-color: {theme['button_stop']};
+        }}
+        QPushButton#continuous {{
+            background-color: {theme['button_continuous']};
+        }}
+    """
     
-    # Return full stylesheet
-    return base_styles.format(
+    # Format base styles
+    base_styles_formatted = base_styles.format(
         text_color=theme['text'],
         slider_groove=theme['slider_groove'],
         slider_handle=theme['slider_handle'],
@@ -119,3 +109,14 @@ def get_dynamic_styles(dark_mode=True, element=None):
         button_pressed=theme['button_pressed'],
         button_border=theme['button_border']
     )
+    
+    # Combine styles
+    full_styles = base_styles_formatted + animation_button_styles
+    
+    # Return specific element style if requested
+    if element == "button":
+        return full_styles.split("QPushButton {")[1].split("}")[0] + "}"
+    elif element == "slider":
+        return full_styles.split("QSlider::groove:horizontal {")[1].split("}")[0] + "}"
+    
+    return full_styles
