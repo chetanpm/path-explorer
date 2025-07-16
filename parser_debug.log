@@ -1,6 +1,6 @@
-qt.qpa.fonts: Populating font family aliases took 60 ms. Replace uses of missing font family "Segoe UI" with one that exists to avoid this cost. 
+qt.qpa.fonts: Populating font family aliases took 58 ms. Replace uses of missing font family "Segoe UI" with one that exists to avoid this cost. 
 Initializing VisualizationWidget...
-VisualizationWidget initialized in 0.17 seconds
+VisualizationWidget initialized in 0.19 seconds
 Loading CLI file: /Users/chetanpm/Downloads/Task 2.cli
 Parsing CLI file: /Users/chetanpm/Downloads/Task 2.cli
 Found layer 30 at z=0.0002mm
@@ -159,7 +159,7 @@ Layer 2 (Original: 90)
 Layer 2: z=0.0007mm, 1 hatches
 Added 49 hatch points
 Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.02 seconds
+Layer rendered in 0.01 seconds
 Plotting layer 3...
 Layer 3 (Original: 120)
 Layer 3: z=0.0009mm, 1 hatches
@@ -183,7 +183,7 @@ Layer 6 (Original: 210)
 Layer 6: z=0.0015mm, 1 hatches
 Added 48 hatch points
 Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.02 seconds
+Layer rendered in 0.01 seconds
 Plotting layer 7...
 Layer 7 (Original: 240)
 Layer 7: z=0.0018mm, 1 hatches
@@ -196,251 +196,89 @@ Layer 8: z=0.0020mm, 1 hatches
 Added 46 hatch points
 Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
 Layer rendered in 0.01 seconds
-Plotting layer 9...
-Layer 9 (Original: 300)
-Layer 9: z=0.0022mm, 1 hatches
-Added 37 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
-Plotting layer 10...
-Layer 10 (Original: 330)
-Layer 10: z=0.0024mm, 1 hatches
-Added 43 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.02 seconds
-Plotting layer 9...
-Layer 9 (Original: 300)
-Layer 9: z=0.0022mm, 1 hatches
-Added 37 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
-Plotting layer 10...
-Layer 10 (Original: 330)
-Layer 10: z=0.0024mm, 1 hatches
-Added 43 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
-Plotting layer 9...
-Layer 9 (Original: 300)
-Layer 9: z=0.0022mm, 1 hatches
-Added 37 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
-Plotting layer 10...
-Layer 10 (Original: 330)
-Layer 10: z=0.0024mm, 1 hatches
-Added 43 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
-Plotting layer 9...
-Layer 9 (Original: 300)
-Layer 9: z=0.0022mm, 1 hatches
-Added 37 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
-Plotting layer 10...
-Layer 10 (Original: 330)
-Layer 10: z=0.0024mm, 1 hatches
-Added 43 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
-Plotting layer 9...
-Layer 9 (Original: 300)
-Layer 9: z=0.0022mm, 1 hatches
-Added 37 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
-Plotting layer 10...
-Layer 10 (Original: 330)
-Layer 10: z=0.0024mm, 1 hatches
-Added 43 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
-Plotting layer 11...
-Layer 11 (Original: 360)
-Layer 11: z=0.0026mm, 1 hatches
-Added 49 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.02 seconds
-Plotting layer 12...
-Layer 12 (Original: 390)
-Layer 12: z=0.0028mm, 1 hatches
-Added 48 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
-Plotting layer 13...
-Layer 13 (Original: 420)
-Layer 13: z=0.0031mm, 1 hatches
-Added 42 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
-Plotting layer 14...
-Layer 14 (Original: 450)
-Layer 14: z=0.0033mm, 1 hatches
-Added 40 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
-Plotting layer 15...
-Layer 15 (Original: 480)
-Layer 15: z=0.0035mm, 1 hatches
-Added 47 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.02 seconds
-Plotting layer 14...
-Layer 14 (Original: 450)
-Layer 14: z=0.0033mm, 1 hatches
-Added 40 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.02 seconds
-Plotting layer 13...
-Layer 13 (Original: 420)
-Layer 13: z=0.0031mm, 1 hatches
-Added 42 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
-Plotting layer 14...
-Layer 14 (Original: 450)
-Layer 14: z=0.0033mm, 1 hatches
-Added 40 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.02 seconds
-Plotting layer 15...
-Layer 15 (Original: 480)
-Layer 15: z=0.0035mm, 1 hatches
-Added 47 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.02 seconds
-Plotting layer 16...
-Layer 16 (Original: 510)
-Layer 16: z=0.0037mm, 1 hatches
-Added 49 hatch points
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.01 seconds
 Toggling heat visualization: True
 Heat model params: sigma=0.1000mm (microscope view)
-Plotting layer 16...
-Layer 16 (Original: 510)
-Layer 16: z=0.0037mm, 1 hatches
-Added 49 hatch points
-Layer 16: hatch spacing = 0.1000mm
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.26 seconds
-Plotting layer 17...
-Layer 17 (Original: 540)
-Layer 17: z=0.0039mm, 1 hatches
-Added 45 hatch points
-Layer 17: hatch spacing = 0.1000mm
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.20 seconds
-Plotting layer 18...
-Layer 18 (Original: 570)
-Layer 18: z=0.0041mm, 1 hatches
-Added 37 hatch points
-Layer 18: hatch spacing = 0.1000mm
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.98 seconds
-Plotting layer 19...
-Layer 19 (Original: 600)
-Layer 19: z=0.0044mm, 1 hatches
-Added 44 hatch points
-Layer 19: hatch spacing = 0.1000mm
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.17 seconds
-Plotting layer 20...
-Layer 20 (Original: 630)
-Layer 20: z=0.0046mm, 1 hatches
-Added 49 hatch points
-Layer 20: hatch spacing = 0.1000mm
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.26 seconds
-Plotting layer 21...
-Layer 21 (Original: 660)
-Layer 21: z=0.0048mm, 1 hatches
-Added 48 hatch points
-Layer 21: hatch spacing = 0.1000mm
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.25 seconds
-Plotting layer 22...
-Layer 22 (Original: 690)
-Layer 22: z=0.0050mm, 1 hatches
-Added 42 hatch points
-Layer 22: hatch spacing = 0.1000mm
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.13 seconds
-Plotting layer 23...
-Layer 23 (Original: 720)
-Layer 23: z=0.0052mm, 1 hatches
-Added 39 hatch points
-Layer 23: hatch spacing = 0.1000mm
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.04 seconds
-Plotting layer 25...
-Layer 25 (Original: 780)
-Layer 25: z=0.0057mm, 1 hatches
-Added 49 hatch points
-Layer 25: hatch spacing = 0.1000mm
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.29 seconds
-Plotting layer 26...
-Layer 26 (Original: 810)
-Layer 26: z=0.0059mm, 1 hatches
+Plotting layer 8...
+Layer 8 (Original: 270)
+Layer 8: z=0.0020mm, 1 hatches
 Added 46 hatch points
-Layer 26: hatch spacing = 0.1000mm
+Layer 8: hatch spacing = 0.1000mm
 Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.21 seconds
-Plotting layer 27...
-Layer 27 (Original: 840)
-Layer 27: z=0.0061mm, 1 hatches
-Added 37 hatch points
-Layer 27: hatch spacing = 0.1000mm
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 0.99 seconds
-Plotting layer 28...
-Layer 28 (Original: 870)
-Layer 28: z=0.0063mm, 1 hatches
-Added 43 hatch points
-Layer 28: hatch spacing = 0.1000mm
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.16 seconds
-Plotting layer 29...
-Layer 29 (Original: 900)
-Layer 29: z=0.0065mm, 1 hatches
+Layer rendered in 1.19 seconds
+Plotting layer 7...
+Layer 7 (Original: 240)
+Layer 7: z=0.0018mm, 1 hatches
 Added 49 hatch points
-Layer 29: hatch spacing = 0.1000mm
+Layer 7: hatch spacing = 0.1000mm
 Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.28 seconds
-Plotting layer 22...
-Layer 22 (Original: 690)
-Layer 22: z=0.0050mm, 1 hatches
+Layer rendered in 1.27 seconds
+Plotting layer 4...
+Layer 4 (Original: 150)
+Layer 4: z=0.0011mm, 1 hatches
 Added 42 hatch points
-Layer 22: hatch spacing = 0.1000mm
+Layer 4: hatch spacing = 0.1000mm
 Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.12 seconds
-Plotting layer 21...
-Layer 21 (Original: 660)
-Layer 21: z=0.0048mm, 1 hatches
-Added 48 hatch points
-Layer 21: hatch spacing = 0.1000mm
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.26 seconds
-Plotting layer 18...
-Layer 18 (Original: 570)
-Layer 18: z=0.0041mm, 1 hatches
-Added 37 hatch points
-Layer 18: hatch spacing = 0.1000mm
-Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.01 seconds
+Layer rendered in 1.11 seconds
 Plotting layer 14...
 Layer 14 (Original: 450)
 Layer 14: z=0.0033mm, 1 hatches
 Added 40 hatch points
 Layer 14: hatch spacing = 0.1000mm
 Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.07 seconds
+Layer rendered in 1.06 seconds
+Plotting layer 7...
+Layer 7 (Original: 240)
+Layer 7: z=0.0018mm, 1 hatches
+Added 49 hatch points
+Layer 7: hatch spacing = 0.1000mm
+Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
+Layer rendered in 1.26 seconds
+Plotting layer 8...
+Layer 8 (Original: 270)
+Layer 8: z=0.0020mm, 1 hatches
+Added 46 hatch points
+Layer 8: hatch spacing = 0.1000mm
+Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
+Layer rendered in 1.21 seconds
 Plotting layer 10...
 Layer 10 (Original: 330)
 Layer 10: z=0.0024mm, 1 hatches
 Added 43 hatch points
 Layer 10: hatch spacing = 0.1000mm
 Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
-Layer rendered in 1.14 seconds
+Layer rendered in 1.13 seconds
+Plotting layer 9...
+Layer 9 (Original: 300)
+Layer 9: z=0.0022mm, 1 hatches
+Added 37 hatch points
+Layer 9: hatch spacing = 0.1000mm
+Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
+Layer rendered in 0.99 seconds
+Plotting layer 6...
+Layer 6 (Original: 210)
+Layer 6: z=0.0015mm, 1 hatches
+Added 48 hatch points
+Layer 6: hatch spacing = 0.1000mm
+Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
+Layer rendered in 1.25 seconds
+Plotting layer 5...
+Layer 5 (Original: 180)
+Layer 5: z=0.0013mm, 1 hatches
+Added 39 hatch points
+Layer 5: hatch spacing = 0.1000mm
+Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
+Layer rendered in 1.05 seconds
+Plotting layer 4...
+Layer 4 (Original: 150)
+Layer 4: z=0.0011mm, 1 hatches
+Added 42 hatch points
+Layer 4: hatch spacing = 0.1000mm
+Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
+Layer rendered in 1.12 seconds
+Plotting layer 1...
+Layer 1 (Original: 60)
+Layer 1: z=0.0005mm, 1 hatches
+Added 44 hatch points
+Layer 1: hatch spacing = 0.1000mm
+Using overall bounds: min=[-1.34610000e+01 -1.52910000e+01  2.46541353e-04], max=[-1.06590000e+01 -1.24890000e+01  7.17586466e-03]
+Layer rendered in 1.15 seconds
