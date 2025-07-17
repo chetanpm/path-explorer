@@ -2,6 +2,13 @@
 
 The Path Explorer is a modern PyQt6-based application designed for visualizing additive manufacturing toolpaths from CLI files. It offers thermal simulation and 3D preview inspection capabilities, allowing for detailed analysis of manufacturing processes.
 
+## Screenshots and demonstration video
+
+![DarkMode](Demonstration/Dark_mode.png)
+![LightMode](Demonstration/Light_mode.png)
+![FileRendered](Demonstration/Animation.png)
+![demonstration](Demonstration/Video.mov)
+
 ## Installation
 
 To simplify the Python environment setup, I recommend using [UV](https://docs.astral.sh/uv/), a virtual environment manager and extremely fast package manager written in Rust. UV consolidates multiple setup steps into one, making it easier to set up the environment. Alternatively, I’ve provided the requirements.txt file for those who prefer using their preferred package manager and setting up a virtual environment as they are accustomed to.
@@ -10,7 +17,7 @@ I’ve primarily tested the application on three operating systems:
 
 ## macOS 15.5 (ARM V9.2A: Apple Silicone)
 
-Installing a package manager like Homebrew is highly beneficial on macOS, as it allows you to install many Linux-style programs. After installing Homebrew, follow the next set of commands from the terminal shell, which defaults to zsh:
+Installing a package manager like [Homebrew](https://brew.sh) is highly beneficial on macOS, as it allows you to install many Linux-style programs. After installing Homebrew, follow the next set of commands from the terminal shell, which defaults to zsh:
 
 ```zsh
 brew install uv
