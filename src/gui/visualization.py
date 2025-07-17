@@ -60,6 +60,10 @@ class VisualizationWidget(QWidget):
         self.layer_complete_timer = QTimer()
         self.layer_complete_timer.setSingleShot(True)
         self.layer_complete_timer.timeout.connect(self._start_next_layer)
+    
+    def _get_path_color(self):
+        """Return path color based on current theme"""
+        return "white" if self.theme == "dark" else "black"
 
     def start_animation(self, layer_idx, continuous=False):
         """Prepare and start animation for a layer"""
@@ -110,19 +114,27 @@ class VisualizationWidget(QWidget):
         spot = None
         
         if self.heat_model:
-            spot = self.heat_model.create_moving_spot((position[0], position[1]), position[2])
-            self.plotter.add_mesh(
-                spot,
-                cmap="coolwarm",
-                scalars="Temperature",
-                clim=[0, self.heat_model.max_temp],
-                name="heat_spot"
-            )
+            try:
+                spot, cmap = self.heat_model.create_moving_spot(
+                    (position[0], position[1]), 
+                    position[2],
+                    self.theme
+                )
+                self.plotter.add_mesh(
+                    spot,
+                    cmap=cmap,
+                    scalars="Temperature",
+                    clim=[0, self.heat_model.max_temp],
+                    name="heat_spot"
+                )
+            except Exception as e:
+                print(f"Error creating heat spot: {e}")
         
         # Update tool position marker
         self.plotter.remove_actor("tool_position")
         tool = pv.Sphere(radius=0.05, center=position)
-        self.plotter.add_mesh(tool, color="red", name="tool_position")
+        self.plotter.add_mesh(tool, color="red" if self.theme == "dark" else "darkred", name="tool_position")
+
         
         # Accumulate heat only if spot was created
         if spot:
@@ -259,7 +271,8 @@ class VisualizationWidget(QWidget):
         if not self.cli_data or layer_idx >= len(self.cli_data['layers']):
             print("No CLI data or invalid layer index")
             return
-            
+        # Get theme-based path color
+        path_color = self._get_path_color()    
         # Save current camera position
         current_camera_position = self.plotter.camera_position
         self.current_layer = layer_idx
@@ -302,17 +315,22 @@ class VisualizationWidget(QWidget):
         for hatch in layer['hatches']:
             if len(hatch) < 2:
                 continue
-            # Collect points for heatmap
-            all_hatch_points.extend(hatch)
-
+            try:
             # Create tube visualization
-            points = np.array([[p[0], p[1], z] for p in hatch])
-            poly = pv.lines_from_points(points)
-            tube = poly.tube(radius=0.001)
-            self.plotter.add_mesh(tube, color=hatch_color, name="hatches")
-            hatch_points_count += len(hatch)
-        
-        print(f"Added {hatch_points_count} hatch points")
+                points = np.array([[p[0], p[1], z] for p in hatch])
+                poly = pv.lines_from_points(points)
+                
+                # Skip invalid geometries
+                if poly.n_points < 2:
+                    continue
+                    
+                tube = poly.tube(radius=0.001)
+                self.plotter.add_mesh(tube, color=path_color, name="hatches")
+                hatch_points_count += len(hatch)
+                all_hatch_points.extend(hatch)
+            except Exception as e:
+                print(f"Error creating hatch visualization: {e}")
+                continue
         
         # Add heat visualization if enabled
         if self.heat_model and layer['hatches']:
@@ -356,7 +374,7 @@ class VisualizationWidget(QWidget):
                     points = np.array([[p[0], p[1], z] for p in hatch])
                     poly = pv.lines_from_points(points)
                     tube = poly.tube(radius=0.001)
-                    self.plotter.add_mesh(tube, color="yellow", name="hatches")
+                    self.plotter.add_mesh(tube, color="yellow" if self.theme == "dark" else "darkred", name="hatches")
 
         
         # Use overall part dimensions for axes
@@ -412,6 +430,8 @@ class VisualizationWidget(QWidget):
 
     def show_full_part(self):
         """Render the entire 3D part"""
+        # Get theme-based path color
+        path_color = self._get_path_color()
         if not self.cli_data:
             return
             
@@ -436,7 +456,7 @@ class VisualizationWidget(QWidget):
                 points = np.array([[p[0], p[1], z] for p in hatch])
                 poly = pv.lines_from_points(points)
                 tube = poly.tube(radius=0.001)
-                self.plotter.add_mesh(tube, color=hatch_color)
+                self.plotter.add_mesh(tube, color=path_color)
         
         # Add axes and bounds
         if self.overall_bounds:

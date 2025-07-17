@@ -39,6 +39,16 @@ class AMVisualizer(QMainWindow):
         self.animation_finished.connect(self._on_animation_finished)
     
     def _setup_ui(self):
+        # Set application font with fallbacks
+        app_font = QFont("Segoe UI")
+        if app_font.exactMatch():
+            QApplication.setFont(app_font)
+        else:
+            # Try fallback fonts
+            for font in ["Arial", "Helvetica", "Verdana"]:
+                if QFont(font).exactMatch():
+                    QApplication.setFont(QFont(font))
+                    break
         # Window configuration
         self.setWindowTitle("Path Explorer")
         self.setGeometry(100, 100, 1400, 900)
@@ -73,6 +83,9 @@ class AMVisualizer(QMainWindow):
         control_layout = QHBoxLayout(control_frame)
         
         # Layer navigation
+        layer_container = QWidget()
+        layer_layout = QVBoxLayout(layer_container)
+        layer_layout.setContentsMargins(0, 0, 0, 0)
         self.layer_label = QLabel("Layer: 0/0")
         self.layer_label.setFont(QFont("Segoe UI", 10))
         control_layout.addWidget(self.layer_label)
@@ -182,6 +195,9 @@ class AMVisualizer(QMainWindow):
         #toolbar.addAction(self.continuous_action)
 
         # Animation speed control
+        speed_container = QWidget()
+        speed_layout = QVBoxLayout(speed_container)
+        speed_layout.setContentsMargins(0, 0, 0, 0)
         speed_label = QLabel("Speed:")
         control_layout.addWidget(speed_label)
 
@@ -189,6 +205,9 @@ class AMVisualizer(QMainWindow):
         self.speed_slider.setRange(1, 500)  # 1ms to 500ms
         self.speed_slider.setValue(1)
         self.speed_slider.valueChanged.connect(self._change_speed)
+        self.speed_slider.setStyleSheet(get_dynamic_styles(self.dark_mode, "slider"))
+        self.speed_slider.setMinimumHeight(40)
+        speed_layout.addWidget(self.speed_slider)
         control_layout.addWidget(self.speed_slider)
 
         # Status bar
@@ -381,6 +400,17 @@ class AMVisualizer(QMainWindow):
         self._update_ui_for_theme()
         
         self.status_bar.showMessage(f"Switched to {'dark' if self.dark_mode else 'light'} mode", 3000)
+        # Safely re-render current view
+        try:
+            if hasattr(self.viz_widget, 'cli_data') and self.viz_widget.cli_data:
+                QApplication.processEvents()
+                if self.viz_widget.view_mode == "full":
+                    self.viz_widget.show_full_part()
+                else:
+                    self.viz_widget.plot_layer(self.viz_widget.current_layer)
+        except Exception as e:
+            print(f"Error during theme switch: {e}")
+            self.status_bar.showMessage(f"Render error: {str(e)}", 5000)
     
     def _update_ui_for_theme(self):
         """Update UI elements for current theme"""

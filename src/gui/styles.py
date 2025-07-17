@@ -9,15 +9,16 @@ def get_dynamic_styles(dark_mode=True, element=None):
         }}
         QSlider::groove:horizontal {{
             background: {slider_groove};
-            height: 8px;
-            border-radius: 4px;
+            height: 14px;
+            border-radius: 8px;
         }}
         QSlider::handle:horizontal {{
             background: {slider_handle};
-            width: 16px;
-            margin: -4px 0;
-            border-radius: 8px;
-            border: 1px solid {slider_handle_border};
+            width: 24px;
+            height: 24px;
+            margin: -5px 0;
+            border-radius: 12px;
+            border: 2px solid {slider_handle_border};
         }}
         QLabel {{
             color: {text_color};

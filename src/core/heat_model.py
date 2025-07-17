@@ -28,6 +28,10 @@ class HeatSource:
         grid = pv.StructuredGrid(xx, yy, zz)
         grid["Temperature"] = temp_grid.flatten(order="F")
         return grid
+        
+        # Use theme-based colormap
+        cmap = "coolwarm" if theme == "dark" else "hot"
+        return grid, cmap
     
     def _distance_to_segment(self, x, y, p1, p2):
         """Calculate distance from point (x,y) to line segment (p1-p2)"""
