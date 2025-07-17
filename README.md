@@ -1,13 +1,15 @@
 # Project Overview
 
-The Path Explorer is a modern PyQt6-based application designed for visualizing additive manufacturing toolpaths from CLI files. It offers thermal simulation and 3D preview inspection capabilities, allowing for detailed analysis of manufacturing processes.
+The Path Explorer is a modern PyQt6-based application designed for visualizing additive manufacturing toolpaths from CLI files. It offers thermal simulation and 3D preview inspection capabilities, enabling detailed analysis of manufacturing processes.
 
-## Screenshots and demonstration video
+## Screenshots and Demonstration Video
 
-![DarkMode](Demonstration/Dark_mode.png)
-![LightMode](Demonstration/Light_mode.png)
-![FileRendered](Demonstration/Animation.png)
-![demonstration](Demonstration/Video.mov)
+Here are some screenshots and a demonstration video of the application:
+
+- [Dark Mode](Demonstration/Dark_mode.png)
+- [Light Mode](Demonstration/Light_mode.png)
+- [File Rendered](Demonstration/Animation.png)
+- [Demonstration](Demonstration/Video.mov)
 
 ## Installation
 
@@ -23,13 +25,13 @@ Installing a package manager like [Homebrew](https://brew.sh) is highly benefici
 brew install uv
 ```
 
-MacOS typically comes with Git installed by default. However, if you need to install Git from Homebrew, append “git” to the above command: brew install uv git.
+MacOS typically comes with Git shipped by default with all its operating system versions. However, if you need to install Git from Homebrew, append “git” to the above command: brew install uv git.
 
 ## Windows 11 (Intel)
 
-In the latest versions of Windows, there’s an inbuilt package manager that you can use to download packages like UV and Git.
+In the latest versions of Windows, there’s an inbuilt package manager that allows you to download packages like UV and Git.
 
-You can either follow the installation instructions provided on UV’s website or use the following command:
+You can either follow the installation instructions provided on [UV's](https://docs.astral.sh/uv/) website or use the following command:
 
 ```bash
 winget install —id=astral-sh.uv -e
@@ -47,7 +49,6 @@ winget install git.git
 sudo pacman -S uv git
 ```
 
-
 ## Building path-explorer
 
 Once the system’s global dependencies are met, proceed with the path-explorer project. These steps are consistent across all platforms.
@@ -60,7 +61,7 @@ git clone https://gitlab.com/chetanpm/path-explorer && cd path-explorer
 uv sync
 ```
 
-The repository contains a lockfile named uv.lock that lists the required package dependencies and their versions. I tested these versions in the project. UV installs all the dependencies swiftly.
+The repository contains a lockfile named uv.lock that lists the required package dependencies and their versions. I tested these versions in the project, and UV installs all the dependencies swiftly.
 
 ```zsh
 uv run .
@@ -84,62 +85,63 @@ If you’re not a fan of using UV, you can create a virtual environment using Py
 
 ## Development
 
-The architecture was designed to be modular. The core package consists of cli_parser, heat_model, and theme_manager modules, each enabling different features in the application. More modules can be added to the core to expand its functionality.
+The architecture is designed to be modular. The core package comprises three modules: cli_parser, heat_model, and theme_manager. Each module enables specific features within the application. Additional modules can be added to the core to expand its functionality.
 
-The graphical user interface (GUI) package includes main_window, visualization, and styles modules, which are decoupled from the core packages.
+The graphical user interface (GUI) package includes main_window, visualization, and styles modules. These modules are decoupled from the core packages.
 
-The parsing logic is executed on the CPU using the cli_parser script. Rendering is offloaded with pyvista, which uses vtk for abstraction and handling GPU acceleration. It utilizes corresponding acceleration frameworks like Metal on Apple silicon, DirectX on Windows, and OpenGL/Vulkan on Linux.
+The cli_parser script executes the parsing logic on the CPU. Rendering is offloaded using pyvista, which utilizes vtk for abstraction and handles GPU acceleration. It leverages corresponding acceleration frameworks such as Metal on Apple silicon, DirectX on Windows, and OpenGL/Vulkan on Linux.
 
 ## Key Features
 
 ### Parsing Algorithm
 
-1. Read entire file content
-2. Locate header end marker ($$HEADEREND)
-3. Parse header parameters:
+1. The script reads the entire file content.
+2. It locates the header end marker ($$HEADEREND).
+3. The script parses the header parameters:
    - $$UNITS/ (unit conversion factor)
-   - $$DIMENSION/ (min/max coordinates)
+   - $$DIMENSION/ (minimum and maximum coordinates)
    - $$LAYERS/ (total layer count)
-4. Process geometry section:
+4. The script processes the geometry section:
    - For each $$LAYER/ entry:
-     a. Calculate Z-height based on layer index
-     b. Initialize layer data structure
+     a. It calculates the Z-height based on the layer index.
+     b. It initializes the layer data structure.
    - For each $$HATCHES/ entry:
-     a. Extract point count
-     b. Process coordinate pairs
-     c. Store as polyline segments
-   - For each $$CONTOURS/ entry:
-     a. Extract closed loop points
-     b. Store as boundary polygons
-5. Validate layer count consistency
-6. Return structured data with:
-   - Header information
-   - Layer array with Z-heights and geometries
-   - Actual vs. declared layer counts
+     a. It extracts the point count.
+     b. It processes the coordinate pairs.
+     c. It stores the result as polyline segments.
+5. The script validates the consistency of the layer count.
+6. The script returns structured data with:
+   - Header information.
+   - A layer array containing Z-heights and geometries.
+   - The actual and declared layer counts.
 
-*Parses critical header information including units, dimensions, and layer count.
-*Handles both metric and imperial units based on header specification and converts it to mm for visualization.
-*Processes each layer sequentially, preserving original layer numbering
-*Calculates precise Z-height based on header dimensions and layer count
-*Gracefully handles malformed lines and missing sections
+- The script parses critical header information, including units, dimensions, and layer count.
+- It handles both metric and imperial units based on the header specification and converts them to millimeters for visualization.
+- The script processes each layer sequentially, preserving the original layer numbering.
+- It calculates precise Z-heights based on the header dimensions and layer count.
+- The script gracefully handles malformed lines and missing sections.
 
 ### Heat Source Modeling
 
-Our thermal simulation implements a physics-based heat source model that realistically represents the energy input during additive manufacturing processes. It uses the gausian heat distribution:
+The heat source modeling module enables the simulation of heat sources in the application.
 
-*I've implemented a moving heat source to simulate the line by line scanning process for each layer.
-*Spot size adapts based on hatch spacing
+Our thermal simulation employs a physics-based heat source model that accurately represents the energy input during additive manufacturing processes. It utilizes the Gaussian heat distribution:
+
+-I’ve incorporated a moving heat source to simulate the line-by-line scanning process for each layer.
+-The spot size adapts based on the hatch spacing.
 
 ### Visualization
 
-*Real-time Rendering with GPU acceleration
+-Real-time rendering with GPU acceleration.
 
 ### Limitations
 
-*Currently supports hatches only (no contours)
-*Assumes constant layer height
-*Simplified Gaussian model (not full Rosenthal solution)
-*No material-specific calibration
-*No experimental validation
+-Currently supports hatches only (no contours).
+-Assumes constant layer height.
+-Simplified Gaussian model (not the full Rosenthal solution).
+-No material-specific calibration.
+-No experimental validation.
+
+Thermal accumulation with history and a full simulation of thermal application with a moving heat source automatically layer after layer, but these features have been commented out of the code due to issues that need to be addressed. Time is required to fix these features.
 
 If you decide to make changes to the code, run ‘uv tool install ruff’ and ‘uv tool run ruff check’ from within the repository. The —fix option can sometimes be used to fix simple syntax errors.
