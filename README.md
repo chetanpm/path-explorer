@@ -6,10 +6,10 @@ The Path Explorer is a modern PyQt6-based application designed for visualizing a
 
 Here are some screenshots and a demonstration video of the application:
 
-- [Dark Mode](Demonstration/Dark_mode.png)
-- [Light Mode](Demonstration/Light_mode.png)
-- [File Rendered](Demonstration/Animation.png)
-- [Demonstration](Demonstration/Video.mov)
+![Dark Mode](Demonstration/Dark_mode.png)
+![Light Mode](Demonstration/Light_mode.png)
+![File Rendered](Demonstration/Animation.png)
+![Demonstration Video](Demonstration/Video.mov)
 
 ## Installation
 
