@@ -119,6 +119,7 @@ The cli_parser script executes the parsing logic on the CPU. Rendering is offloa
 - It handles both metric and imperial units based on the header specification and converts them to millimeters for visualization.
 - The script processes each layer sequentially, preserving the original layer numbering.
 - It calculates precise Z-heights based on the header dimensions and layer count.
+- Shows a 3d preview by showing all the layers at the same time giving you a rough idea of the final 3d model.
 - The script gracefully handles malformed lines and missing sections.
 
 ### Heat Source Modeling
@@ -127,21 +128,21 @@ The heat source modeling module enables the simulation of heat sources in the ap
 
 Our thermal simulation employs a physics-based heat source model that accurately represents the energy input during additive manufacturing processes. It utilizes the Gaussian heat distribution:
 
--I’ve incorporated a moving heat source to simulate the line-by-line scanning process for each layer.
--The spot size adapts based on the hatch spacing.
+- I’ve incorporated a moving heat source to simulate the line-by-line scanning process for each layer.
+- The spot size adapts based on the hatch spacing.
 
 ### Visualization
 
--Real-time rendering with GPU acceleration.
+- Real-time rendering with GPU acceleration.
 
 ### Limitations
 
--Currently supports hatches only (no contours).
--Assumes constant layer height.
--Simplified Gaussian model (not the full Rosenthal solution).
--No material-specific calibration.
--No experimental validation.
+- Currently supports hatches only (no contours).
+- Assumes constant layer height.
+- Simplified Gaussian model (not the full Rosenthal solution).
+- No material-specific calibration.
+- No experimental validation.
 
-Thermal accumulation with history and a full simulation of thermal application with a moving heat source automatically layer after layer, but these features have been commented out of the code due to issues that need to be addressed. Time is required to fix these features.
+Thermal accumulation with history and a full simulation of thermal application with a moving heat source automatically layer after layer was working but these features have been commented out of the code due to issues that need to be addressed. Time is required to fix these features.
 
 If you decide to make changes to the code, run ‘uv tool install ruff’ and ‘uv tool run ruff check’ from within the repository. The —fix option can sometimes be used to fix simple syntax errors.
