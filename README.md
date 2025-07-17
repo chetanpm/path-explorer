@@ -88,6 +88,58 @@ The architecture was designed to be modular. The core package consists of cli_pa
 
 The graphical user interface (GUI) package includes main_window, visualization, and styles modules, which are decoupled from the core packages.
 
-The parsing logic is executed on the CPU using the cli_parser script. Rendering is offloaded to pyvista, which uses vtk for abstraction and handling GPU acceleration. It utilizes corresponding acceleration frameworks like Metal on Apple silicon, DirectX on Windows, and OpenGL/Vulkan on Linux.
+The parsing logic is executed on the CPU using the cli_parser script. Rendering is offloaded with pyvista, which uses vtk for abstraction and handling GPU acceleration. It utilizes corresponding acceleration frameworks like Metal on Apple silicon, DirectX on Windows, and OpenGL/Vulkan on Linux.
+
+## Key Features
+
+### Parsing Algorithm
+
+1. Read entire file content
+2. Locate header end marker ($$HEADEREND)
+3. Parse header parameters:
+   - $$UNITS/ (unit conversion factor)
+   - $$DIMENSION/ (min/max coordinates)
+   - $$LAYERS/ (total layer count)
+4. Process geometry section:
+   - For each $$LAYER/ entry:
+     a. Calculate Z-height based on layer index
+     b. Initialize layer data structure
+   - For each $$HATCHES/ entry:
+     a. Extract point count
+     b. Process coordinate pairs
+     c. Store as polyline segments
+   - For each $$CONTOURS/ entry:
+     a. Extract closed loop points
+     b. Store as boundary polygons
+5. Validate layer count consistency
+6. Return structured data with:
+   - Header information
+   - Layer array with Z-heights and geometries
+   - Actual vs. declared layer counts
+
+*Parses critical header information including units, dimensions, and layer count.
+*Handles both metric and imperial units based on header specification and converts it to mm for visualization.
+*Processes each layer sequentially, preserving original layer numbering
+*Calculates precise Z-height based on header dimensions and layer count
+*Gracefully handles malformed lines and missing sections
+
+### Heat Source Modeling
+
+Our thermal simulation implements a physics-based heat source model that realistically represents the energy input during additive manufacturing processes. It uses the gausian heat distribution:
+
+*I've implemented a moving heat source to simulate the line by line scanning process for each layer.
+*Spot size adapts based on hatch spacing
+
+### Visualization
+
+*Real-time Rendering with GPU acceleration
+
+### Limitations
+
+*Currently supports hatches only (no contours)
+*Assumes constant layer height
+*Simplified Gaussian model (not full Rosenthal solution)
+*No material-specific calibration
+*No experimental validation
 
 If you decide to make changes to the code, run ‘uv tool install ruff’ and ‘uv tool run ruff check’ from within the repository. The —fix option can sometimes be used to fix simple syntax errors.
