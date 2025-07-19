@@ -31,6 +31,39 @@ class HeatSource:
         grid = pv.StructuredGrid(xx, yy, zz)
         grid["Temperature"] = temp_grid.flatten(order="F")
         return grid, cmap
+
+    def create_hatch_heat_map(self, hatches, z, hatch_spacing):
+        """Create a heat map visualization for hatches"""
+        # Create a grid that covers the hatch area
+        all_points = [point for hatch in hatches for point in hatch]
+        if not all_points:
+            return None
+            
+        xs = [p[0] for p in all_points]
+        ys = [p[1] for p in all_points]
+        
+        # Create grid with resolution based on hatch spacing
+        resolution = max(0.05, hatch_spacing / 5)  # Higher resolution than hatch spacing
+        xi = np.arange(min(xs) - self.spot_size, max(xs) + self.spot_size, resolution)
+        yi = np.arange(min(ys) - self.spot_size, max(ys) + self.spot_size, resolution)
+        xx, yy = np.meshgrid(xi, yi)
+        zz = np.full(xx.shape, z)
+        
+        # Initialize temperature grid
+        temp_grid = np.zeros_like(xx)
+        
+        # Add temperature contribution from each hatch point
+        for hatch in hatches:
+            for point in hatch:
+                x0, y0 = point
+                dist = np.sqrt((xx - x0)**2 + (yy - y0)**2)
+                temp_contribution = self.max_temp * np.exp(-dist**2 / (2 * self.sigma**2))
+                temp_grid = np.maximum(temp_grid, temp_contribution)
+        
+        # Create structured grid
+        grid = pv.StructuredGrid(xx, yy, zz)
+        grid["Temperature"] = temp_grid.flatten(order="F")
+        return grid
     
     def _distance_to_segment(self, x, y, p1, p2):
         """Calculate distance from point (x,y) to line segment (p1-p2)"""

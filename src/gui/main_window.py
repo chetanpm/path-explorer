@@ -98,10 +98,10 @@ class AMVisualizer(QMainWindow):
         control_layout.addWidget(self.layer_slider, 4)
         
         # Heat map toggle
-        #self.heat_toggle = QCheckBox("Show Heat Source")
-        #self.heat_toggle.setFont(QFont("Segoe UI", 10))
-        #self.heat_toggle.stateChanged.connect(self._toggle_heat)
-        #control_layout.addWidget(self.heat_toggle)
+        self.heat_toggle = QCheckBox("Show Heat Source")
+        self.heat_toggle.setFont(QFont("Segoe UI", 10))
+        self.heat_toggle.stateChanged.connect(self._toggle_heat)
+        control_layout.addWidget(self.heat_toggle)
         
         # Fit to view button
         self.fit_button = QPushButton(get_icon("fit") + " Fit View")

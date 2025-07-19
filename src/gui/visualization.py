@@ -292,11 +292,6 @@ class VisualizationWidget(QWidget):
         if self.plotter.camera_position != self.user_camera_position:
             self.user_camera_position = self.plotter.camera_position
         
-        self.current_layer = layer_idx
-        self.plotter.clear()
-        layer = self.cli_data['layers'][layer_idx]
-        z = layer['z']
-        
         # Show original layer number in debug output
         print(f"Layer {layer_idx} (Original: {layer['layer_number']})")
 
@@ -319,7 +314,7 @@ class VisualizationWidget(QWidget):
             if len(hatch) < 2:
                 continue
             try:
-            # Create tube visualization
+                # Create tube visualization
                 points = np.array([[p[0], p[1], z] for p in hatch])
                 poly = pv.lines_from_points(points)
                 
@@ -341,47 +336,50 @@ class VisualizationWidget(QWidget):
             hatch_spacing = self._calculate_hatch_spacing(layer['hatches'])
             print(f"Layer {layer_idx}: hatch spacing = {hatch_spacing:.4f}mm")
             
-            # Create precise hatch-centered heat map
-            heat_mesh = self.heat_model.create_hatch_heat_map(
-                layer['hatches'], 
-                z,
-                hatch_spacing
-            )
-            
-            if heat_mesh is not None:
-                # Determine scalar bar color based on theme
-                scalar_bar_color = "white" if self.theme == "dark" else "black"
-                
-                # Add heat map to plotter
-                self.plotter.add_mesh(
-                    heat_mesh,
-                    cmap="coolwarm",
-                    scalars="Temperature",
-                    clim=[0, self.heat_model.max_temp],
-                    opacity=0.9,
-                    show_scalar_bar=True,
-                    scalar_bar_args={
-                        'title': 'Temperature (°C)',
-                        'color': scalar_bar_color,
-                        'shadow': True,
-                        'title_font_size': 12,
-                        'label_font_size': 10
-                    },
-                    name="heatmap"
+            try:
+                # Create precise hatch-centered heat map
+                heat_mesh = self.heat_model.create_hatch_heat_map(
+                    layer['hatches'], 
+                    z,
+                    hatch_spacing
                 )
                 
-                # Add hatch lines for reference
-                highlight_color = "yellow" if self.theme == "dark" else "darkred"
-                for hatch in layer['hatches']:
-                    if len(hatch) < 2:
-                        continue
-                    points = np.array([[p[0], p[1], z] for p in hatch])
-                    poly = pv.lines_from_points(points)
-                    tube = poly.tube(radius=0.001)
-                    self.plotter.add_mesh(tube, color=highlight_color if self.theme == "dark" else "darkred", name="hatches")
+                if heat_mesh is not None:
+                    # Determine scalar bar color based on theme
+                    scalar_bar_color = "white" if self.theme == "dark" else "black"
+                    
+                    # Add heat map to plotter
+                    self.plotter.add_mesh(
+                        heat_mesh,
+                        cmap="coolwarm",
+                        scalars="Temperature",
+                        clim=[0, self.heat_model.max_temp],
+                        opacity=0.9,
+                        show_scalar_bar=True,
+                        scalar_bar_args={
+                            'title': 'Temperature (°C)',
+                            'color': scalar_bar_color,
+                            'shadow': True,
+                            'title_font_size': 12,
+                            'label_font_size': 10
+                        },
+                        name="heatmap"
+                    )
+                    
+                    # Add hatch lines for reference
+                    highlight_color = "yellow" if self.theme == "dark" else "darkred"
+                    for hatch in layer['hatches']:
+                        if len(hatch) < 2:
+                            continue
+                        points = np.array([[p[0], p[1], z] for p in hatch])
+                        poly = pv.lines_from_points(points)
+                        tube = poly.tube(radius=0.001)
+                        self.plotter.add_mesh(tube, color=highlight_color, name="hatches")
+            except AttributeError:
+                print("Heat model doesn't support hatch heat maps")
+                self.heat_model = None  # Disable heat visualization
 
-        
-        # Use overall part dimensions for axes
+        # ALWAYS ADD AXES AND BOUNDS
         if self.overall_bounds:
             min_coords = self.overall_bounds['min']
             max_coords = self.overall_bounds['max']
@@ -410,6 +408,8 @@ class VisualizationWidget(QWidget):
         self.plotter.render()
         
         print(f"Layer rendered in {time.time() - start_time:.2f} seconds")
+
+
 
     def _calculate_hatch_spacing(self, hatches):
         """Calculate average hatch spacing for precise heat visualization"""
