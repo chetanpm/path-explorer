@@ -10,7 +10,7 @@ class HeatSource:
         self.sigma = sigma
         self.spot_size = spot_size  # Size of the moving heat spot
         
-    def create_moving_spot(self, position, z):
+    def create_moving_spot(self, position, z, theme="dark"):
         """Create a moving heat spot at given position"""
         x0, y0 = position
         # Create a small grid around the current position
@@ -23,14 +23,13 @@ class HeatSource:
         # Calculate temperature distribution
         dist = np.sqrt((xx - x0)**2 + (yy - y0)**2)
         temp_grid = self.max_temp * np.exp(-dist**2 / (2 * self.sigma**2))
+
+        # Use theme-based colormap
+        cmap = "coolwarm" if theme == "dark" else "hot"
         
         # Create structured grid
         grid = pv.StructuredGrid(xx, yy, zz)
         grid["Temperature"] = temp_grid.flatten(order="F")
-        return grid
-        
-        # Use theme-based colormap
-        cmap = "coolwarm" if theme == "dark" else "hot"
         return grid, cmap
     
     def _distance_to_segment(self, x, y, p1, p2):

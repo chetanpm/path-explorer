@@ -133,7 +133,8 @@ class VisualizationWidget(QWidget):
         # Update tool position marker
         self.plotter.remove_actor("tool_position")
         tool = pv.Sphere(radius=0.05, center=position)
-        self.plotter.add_mesh(tool, color="red" if self.theme == "dark" else "darkred", name="tool_position")
+        tool_color = "red" if self.theme == "dark" else "darkred"  # Theme-based color
+        self.plotter.add_mesh(tool, color=tool_color, name="tool_position")
 
         
         # Accumulate heat only if spot was created
@@ -188,6 +189,8 @@ class VisualizationWidget(QWidget):
     def _setup_base_visualization(self, layer):
         """Setup static visualization elements for animation"""
         z = layer['z']
+        path_color = self._get_path_color()
+        axis_color = "white" if self.theme == "dark" else "black"
         # Plot hatches as paths
         for hatch in layer['hatches']:
             if len(hatch) < 2:
@@ -195,13 +198,13 @@ class VisualizationWidget(QWidget):
             points = np.array([[p[0], p[1], z] for p in hatch])
             poly = pv.lines_from_points(points)
             tube = poly.tube(radius=0.01)
-            self.plotter.add_mesh(tube, color="white", name="hatches")
+            self.plotter.add_mesh(tube, color=path_color, name="hatches")
         
         # Add axes and bounds
         if self.overall_bounds:
             min_coords = self.overall_bounds['min']
             max_coords = self.overall_bounds['max']
-            self.plotter.add_axes(color="white")
+            self.plotter.add_axes(color=axis_color)
             self.plotter.show_bounds(
                 bounds=[
                     min_coords[0], max_coords[0],
@@ -210,7 +213,7 @@ class VisualizationWidget(QWidget):
                 ],
                 grid='front',
                 location='outer',
-                color="white",
+                color=axis_color,
             )
     def set_theme(self, theme):
         """Set current theme (dark/light) for visualization"""
@@ -219,6 +222,7 @@ class VisualizationWidget(QWidget):
     def set_view_mode(self, mode):
         """Set view mode: 'layer' or 'full'"""
         self.view_mode = mode
+        self.stop_animation()
         if self.cli_data:
             if mode == "full":
                 self.show_full_part()
@@ -268,6 +272,7 @@ class VisualizationWidget(QWidget):
     
     def plot_layer(self, layer_idx):
         """Visualize a specific layer with fixed axes"""
+        self.stop_animation()
         if not self.cli_data or layer_idx >= len(self.cli_data['layers']):
             print("No CLI data or invalid layer index")
             return
@@ -301,11 +306,9 @@ class VisualizationWidget(QWidget):
         
         # Set colors based on theme
         if self.theme == "dark":
-            hatch_color = "white"
             axis_color = "white"
             grid_color = "white"
         else:
-            hatch_color = "black"
             axis_color = "black"
             grid_color = "black"
         
@@ -368,13 +371,14 @@ class VisualizationWidget(QWidget):
                 )
                 
                 # Add hatch lines for reference
+                highlight_color = "yellow" if self.theme == "dark" else "darkred"
                 for hatch in layer['hatches']:
                     if len(hatch) < 2:
                         continue
                     points = np.array([[p[0], p[1], z] for p in hatch])
                     poly = pv.lines_from_points(points)
                     tube = poly.tube(radius=0.001)
-                    self.plotter.add_mesh(tube, color="yellow" if self.theme == "dark" else "darkred", name="hatches")
+                    self.plotter.add_mesh(tube, color=highlight_color if self.theme == "dark" else "darkred", name="hatches")
 
         
         # Use overall part dimensions for axes
@@ -432,6 +436,7 @@ class VisualizationWidget(QWidget):
         """Render the entire 3D part"""
         # Get theme-based path color
         path_color = self._get_path_color()
+        axis_color = "white" if self.theme == "dark" else "black"
         if not self.cli_data:
             return
             
@@ -442,10 +447,6 @@ class VisualizationWidget(QWidget):
         current_camera_position = self.plotter.camera_position
         
         self.plotter.clear()
-
-        
-        # Set color based on theme
-        hatch_color = "white" if self.theme == "dark" else "black"
         
         # Render each layer at its actual Z-height
         for layer in self.cli_data['layers']:
@@ -521,6 +522,7 @@ class VisualizationWidget(QWidget):
     
     def toggle_heat(self, visible):
         """Toggle heat visualization"""
+        self.stop_animation()
         print(f"Toggling heat visualization: {visible}")
         if visible:
             from src.core.heat_model import HeatSource
