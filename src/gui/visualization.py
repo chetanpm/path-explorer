@@ -4,16 +4,21 @@
 import numpy as np
 import pyvista as pv
 from PyQt6.QtWidgets import QWidget, QVBoxLayout
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, pyqtSignal
 from pyvistaqt import BackgroundPlotter
 import time
 
 class VisualizationWidget(QWidget):
+    layer_completed = pyqtSignal(int) # required for full layer after layer animation
     def __init__(self, parent=None):
         self.accumulated_heat = None
+        self.accumulated_heat_grid = None  # For cross-layer heat accumulation
+        self.laser_actor = None  # Track laser spot actor
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
         self.setLayout(self.layout)
+        self.accumulated_heat_grid = None  # For cross-layer heat accumulation
+        self.layer_heat_grids = {}  # Store heat grids for each layer
         
         print("Initializing VisualizationWidget...")
         start_time = time.time()
@@ -57,9 +62,10 @@ class VisualizationWidget(QWidget):
         self.accumulated_heat = None  # For heat accumulation visualization
 
         self.continuous_mode = False
-        self.layer_complete_timer = QTimer()
-        self.layer_complete_timer.setSingleShot(True)
-        self.layer_complete_timer.timeout.connect(self._start_next_layer)
+        #self.layer_complete_timer = QTimer()
+        #self.layer_complete_timer.setSingleShot(True)
+        #self.layer_complete_timer.timeout.connect(self._start_next_layer)
+        self.layer_completed.connect(self._start_next_layer)
     
     def _get_path_color(self):
         """Return path color based on current theme"""
@@ -72,12 +78,16 @@ class VisualizationWidget(QWidget):
             
         self.stop_animation()
         self.is_animating = True
+        self.continuous_mode = continuous
         self.current_layer = layer_idx
         layer = self.cli_data['layers'][layer_idx]
         
         # Prepare animation path
         self.animation_path = []
         z = layer['z']
+        #Create empty grid for this layer's heat
+        self.current_layer_heat = None
+
         for hatch in layer['hatches']:
             if len(hatch) < 2:
                 continue
@@ -92,71 +102,110 @@ class VisualizationWidget(QWidget):
                     self.animation_path.append((x, y, z))
         
         self.current_path_index = 0
-        self.plotter.clear()
-        self._setup_base_visualization(layer)
+
+        # Carry over heat from previous layer with decay
+        if continuous and self.heat_model and layer_idx > 0:
+            prev_layer_idx = layer_idx - 1
+            if prev_layer_idx in self.layer_heat_grids:
+                prev_heat = self.layer_heat_grids[prev_layer_idx]
+                # Apply decay to previous layer's heat
+                decayed_heat = (prev_heat - self.heat_model.base_temp) * self.heat_model.decay_factor
+                self.accumulated_heat_grid = decayed_heat + self.heat_model.base_temp
+            else:
+                self.accumulated_heat_grid = None
+        else:
+            self.accumulated_heat_grid = None
+
+        # Only clear if not in continuous mode
+        if not continuous:
+            self.plotter.clear()
+            self._setup_base_visualization(layer)
+        else:
+            # Keep previous visualization but update base for new layer
+            self._update_base_for_new_layer(layer)
+
+        # Always show initial laser position
+        if self.animation_path:
+            initial_pos = self.animation_path[0]
+            self.laser_actor = pv.Sphere(radius=0.05, center=initial_pos)
+            self.plotter.add_mesh(self.laser_actor, color="red", name="laser_spot")
+
         self.animation_timer.start(self.animation_speed)
     
+    def _update_base_for_new_layer(self, layer):
+        """Update visualization for new layer without clearing everything"""
+        z = layer['z']
+        path_color = self._get_path_color()
+        
+        # Plot hatches for this layer
+        for hatch in layer['hatches']:
+            if len(hatch) < 2:
+                continue
+            points = np.array([[p[0], p[1], z] for p in hatch])
+            poly = pv.lines_from_points(points)
+            tube = poly.tube(radius=0.01)
+            self.plotter.add_mesh(tube, color=path_color, name=f"hatches_{self.current_layer}")
+
     def _animate_step(self):
         """Update animation to next position"""
         if self.current_path_index >= len(self.animation_path) or not self.is_animating:
             if self.continuous_mode:
-                # Start transition to next layer
-                self.layer_complete_timer.start(1000)  # 1 second pause
+                # Store current layer's heat before moving to next
+                if self.heat_model and self.current_layer_heat is not None:
+                    self.layer_heat_grids[self.current_layer] = self.current_layer_heat
+                
+                # Emit signal to move to next layer
+                next_layer = self.current_layer + 1
+                self.layer_completed.emit(next_layer)
             else:
                 self.stop_animation()
             return
-            
+
+        # Get the current position FIRST
         position = self.animation_path[self.current_path_index]
         self.current_path_index += 1
+
+        # Update laser position
+        if self.laser_actor:
+            self.laser_actor.translate(
+                [position[0] - self.laser_actor.center[0],
+                position[1] - self.laser_actor.center[1],
+                position[2] - self.laser_actor.center[2]],
+                inplace=True
+            )
+
+        # Always show laser position
+        self.plotter.remove_actor("laser_spot")
+        laser = pv.Sphere(radius=0.05, center=position)
+        self.plotter.add_mesh(laser, color="red", name="laser_spot")
         
-        # Update moving heat spot
-        self.plotter.remove_actor("heat_spot")
-        spot = None
-        
+        # Update heat visualization if enabled
         if self.heat_model:
             try:
-                spot, cmap = self.heat_model.create_moving_spot(
+                # Create new heat spot
+                spot, cmap, new_temp_grid = self.heat_model.create_moving_spot(
                     (position[0], position[1]), 
                     position[2],
-                    self.theme
+                    prev_temps=self.current_layer_heat,
+                    time_elapsed=self.animation_speed / 1000,
+                    theme=self.theme
                 )
+                
+                # Update current layer's heat grid
+                self.current_layer_heat = new_temp_grid
+                
+                # Update visualization
+                self.plotter.remove_actor("heat_layer")
                 self.plotter.add_mesh(
                     spot,
-                    cmap=cmap,
+                    cmap="coolwarm",
                     scalars="Temperature",
                     clim=[0, self.heat_model.max_temp],
-                    name="heat_spot"
+                    opacity=0.7,
+                    name="heat_layer"
                 )
             except Exception as e:
-                print(f"Error creating heat spot: {e}")
-        
-        # Update tool position marker
-        self.plotter.remove_actor("tool_position")
-        tool = pv.Sphere(radius=0.05, center=position)
-        tool_color = "red" if self.theme == "dark" else "darkred"  # Theme-based color
-        self.plotter.add_mesh(tool, color=tool_color, name="tool_position")
-
-        
-        # Accumulate heat only if spot was created
-        if spot:
-            if self.accumulated_heat is None:
-                self.accumulated_heat = spot
-            else:
-                try:
-                    self.accumulated_heat = self.accumulated_heat.merge(spot)
-                except Exception as e:
-                    print(f"Error merging heat spots: {e}")
-                    self.accumulated_heat = spot
-                
-            self.plotter.remove_actor("accumulated_heat")
-            self.plotter.add_mesh(
-                self.accumulated_heat,
-                cmap="coolwarm",
-                scalars="Temperature",
-                clim=[0, self.heat_model.max_temp],
-                opacity=0.5,
-                name="accumulated_heat"
-            )
+                print(f"Error updating heat: {e}")
     
     def _start_next_layer(self):
         """Start animation for the next layer"""
@@ -164,10 +213,6 @@ class VisualizationWidget(QWidget):
         total_layers = len(self.cli_data['layers']) if self.cli_data else 0
         
         if next_layer < total_layers:
-            # Notify main window to update UI
-            if hasattr(self.parent(), 'change_layer_requested'):
-                self.parent().change_layer_requested.emit(next_layer)
-            
             # Start animation for next layer
             self.start_animation(next_layer, continuous=True)
         else:
@@ -181,10 +226,13 @@ class VisualizationWidget(QWidget):
         self.is_animating = False
         self.continuous_mode = False
         self.animation_timer.stop()
-        self.layer_complete_timer.stop()
         self.animation_path = []
         self.current_path_index = 0
         self.accumulated_heat = None
+        # Keep layer heat grids but reset current layer
+        self.current_layer_heat = None
+        self.plotter.remove_actor("heat_layer")
+        self.plotter.remove_actor("laser_spot")
     
     def _setup_base_visualization(self, layer):
         """Setup static visualization elements for animation"""
@@ -276,8 +324,10 @@ class VisualizationWidget(QWidget):
         if not self.cli_data or layer_idx >= len(self.cli_data['layers']):
             print("No CLI data or invalid layer index")
             return
+        
         # Get theme-based path color
         path_color = self._get_path_color()    
+        
         # Save current camera position
         current_camera_position = self.plotter.camera_position
         self.current_layer = layer_idx
@@ -308,8 +358,6 @@ class VisualizationWidget(QWidget):
             grid_color = "black"
         
         # Plot hatches
-        hatch_points_count = 0
-        all_hatch_points = []  # Collect all points for heatmap
         for hatch in layer['hatches']:
             if len(hatch) < 2:
                 continue
@@ -324,8 +372,6 @@ class VisualizationWidget(QWidget):
                     
                 tube = poly.tube(radius=0.001)
                 self.plotter.add_mesh(tube, color=path_color, name="hatches")
-                hatch_points_count += len(hatch)
-                all_hatch_points.extend(hatch)
             except Exception as e:
                 print(f"Error creating hatch visualization: {e}")
                 continue
@@ -341,7 +387,8 @@ class VisualizationWidget(QWidget):
                 heat_mesh = self.heat_model.create_hatch_heat_map(
                     layer['hatches'], 
                     z,
-                    hatch_spacing
+                    hatch_spacing,
+                    self.overall_bounds
                 )
                 
                 if heat_mesh is not None:
@@ -409,8 +456,6 @@ class VisualizationWidget(QWidget):
         
         print(f"Layer rendered in {time.time() - start_time:.2f} seconds")
 
-
-
     def _calculate_hatch_spacing(self, hatches):
         """Calculate average hatch spacing for precise heat visualization"""
         if len(hatches) < 2:
@@ -465,7 +510,6 @@ class VisualizationWidget(QWidget):
             maxc = self.overall_bounds['max']
             
             # Add axes
-            axis_color = "white" if self.theme == "dark" else "black"
             self.plotter.add_axes(color=axis_color)
             
             # Add bounding box

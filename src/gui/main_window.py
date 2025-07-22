@@ -35,8 +35,8 @@ class AMVisualizer(QMainWindow):
         self.dark_mode = True  # Default to dark mode
         self._setup_ui()
         self.cli_data = None
-        self.change_layer_requested.connect(self._on_change_layer_requested)
-        self.animation_finished.connect(self._on_animation_finished)
+        self.viz_widget.layer_completed.connect(self._on_layer_completed) # required for full layer after layer animation
+        
     
     def _setup_ui(self):
         # Set application font with fallbacks
@@ -176,7 +176,7 @@ class AMVisualizer(QMainWindow):
         # Animation controls
         self.play_action = QAction(get_icon("play") + " Play", self)
         self.play_action.setObjectName("play")
-        self.play_action.triggered.connect(self._play_animation)
+        self.play_action.triggered.connect(self.start_single_animation)
         toolbar.addAction(self.play_action)
         
         self.pause_action = QAction(get_icon("pause") + " Pause", self)
@@ -189,10 +189,10 @@ class AMVisualizer(QMainWindow):
         self.stop_action.triggered.connect(self._stop_animation)
         toolbar.addAction(self.stop_action)
         
-        #self.continuous_action = QAction(get_icon("play") + " Continuous Play", self)
-        #self.continuous_action.setObjectName("continuous")
-        #self.continuous_action.triggered.connect(self._play_continuous)
-        #toolbar.addAction(self.continuous_action)
+        self.continuous_action = QAction(get_icon("play") + " Continuous Play", self)
+        self.continuous_action.setObjectName("continuous")
+        self.continuous_action.triggered.connect(self._play_continuous)
+        toolbar.addAction(self.continuous_action)
 
         # Animation speed control
         speed_container = QWidget()
@@ -235,18 +235,53 @@ class AMVisualizer(QMainWindow):
         # Apply initial styles
         self.centralWidget().setStyleSheet(get_dynamic_styles(self.dark_mode))
 
-    def _on_change_layer_requested(self, layer_idx):
-        """Handle request to change layer from visualization"""
-        self.layer_slider.setValue(layer_idx)
-        self.layer_label.setText(f"Layer: {layer_idx}/{self.layer_slider.maximum()}")
-    
-    def _on_animation_finished(self):
-        """Handle animation completion"""
-        self.status_bar.showMessage("Animation completed", 3000)
-    
+        self.change_layer_requested.connect(self._on_change_layer_requested)
+        self.animation_finished.connect(self._on_animation_finished)
+
+    def start_single_animation(self):
+        """Start animation for current layer without forcing heat"""
+        if self.viz_widget.cli_data:
+            self.viz_widget.start_animation(
+                self.layer_slider.value(),
+                continuous=False
+            )
+
+    def start_animation_with_heat(self):
+        """Start animation with proper heat handling"""
+        if not self.viz_widget.cli_data:
+            return
+            
+        # Enable heat visualization if not already enabled
+        if not self.heat_toggle.isChecked():
+            self.heat_toggle.setChecked(True)
+            self._toggle_heat(Qt.CheckState.Checked.value)
+            
+        self.viz_widget.start_animation(
+            self.layer_slider.value(),
+            continuous=self.continuous_action.isChecked()
+        )
+
+    def _on_layer_completed(self, next_layer):
+        """Handle layer completion during continuous animation"""
+        # Update UI first
+        self.layer_slider.setValue(next_layer)
+        self.layer_label.setText(f"Layer: {next_layer}/{self.layer_slider.maximum()}")
+        self.status_bar.showMessage(f"Starting layer {next_layer}", 1000)
+        
+        # Process events to ensure UI updates
+        QApplication.processEvents()
+        
+        # Start animation for next layer
+        self.viz_widget.start_animation(next_layer, continuous=True)
+
+        
     def _play_continuous(self):
         """Start continuous animation across layers"""
         if self.viz_widget.cli_data:
+            # Reset heat accumulation
+            self.viz_widget.layer_heat_grids = {}
+                
+            # Start animation
             self.viz_widget.start_animation(
                 self.layer_slider.value(),
                 continuous=True
@@ -261,6 +296,16 @@ class AMVisualizer(QMainWindow):
         self.layer_label.setText(f"Layer: {layer_idx}/{self.layer_slider.maximum()}")
         self.viz_widget.plot_layer(layer_idx)
 
+    def _on_change_layer_requested(self, layer_idx):
+        """Handle request to change layer from visualization"""
+        self.layer_slider.setValue(layer_idx)
+        self.layer_label.setText(f"Layer: {layer_idx}/{self.layer_slider.maximum()}")
+        self.status_bar.showMessage(f"Starting layer {layer_idx}", 1000)
+
+    def _on_animation_finished(self):
+        """Handle animation completion"""
+        self.status_bar.showMessage("Animation completed", 3000)
+
     def _change_speed(self, value):
         """Change animation speed"""
         if hasattr(self.viz_widget, 'animation_timer'):
@@ -269,11 +314,13 @@ class AMVisualizer(QMainWindow):
                 self.viz_widget.animation_timer.setInterval(value)
 
     def _play_animation(self):
-        """Start or resume animation"""
+        """Start or resume animation for current layer"""
         if self.viz_widget.cli_data:
             if not self.viz_widget.is_animating:
+                # Start single layer animation
                 self.viz_widget.start_animation(self.layer_slider.value())
             else:
+                # Resume paused animation
                 self.viz_widget.animation_timer.start(self.viz_widget.animation_speed)
     
     def _pause_animation(self):
